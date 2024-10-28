@@ -1,28 +1,40 @@
 import Foundation
 import UIKit
 
-@objc(UniversalDeeplink)
-class UniversalDeepLink: CDVPlugin {
+@objc(UniversalDeeplinkPlugin)
+class UniversalDeeplinkPlugin: CDVPlugin {
     
     private var callbackId: String?
     
     override func pluginInitialize() {
         super.pluginInitialize()
-        NotificationCenter.default.addObserver(self, selector: #selector(handleOpenURL), name: Notification.Name.CDVPluginHandleOpenURL, object: nil)
+        swizzleAppDelegateMethod()
     }
     
-    @objc func handleOpenURL(notification: Notification) {
-        if let url = notification.object as? URL {
-            processUniversalLink(url)
-            let alert = UIAlertController(title: nil, message: "Universal Link triggered!", preferredStyle: .alert)
-            DispatchQueue.main.async {
-                self.viewController.present(alert, animated: true) {
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                        alert.dismiss(animated: true, completion: nil)
-                    }
-                }
-            }
+    private func swizzleAppDelegateMethod() {
+        guard let originalMethod = class_getInstanceMethod(AppDelegate.self, #selector(AppDelegate.application(_:continue:restorationHandler:))),
+              let swizzledMethod = class_getInstanceMethod(UniversalDeeplinkPlugin.self, #selector(UniversalDeeplinkPlugin.swizzled_application(_:continue:restorationHandler:))) else {
+            return
         }
+        
+        method_exchangeImplementations(originalMethod, swizzledMethod)
+    }
+    
+    @objc 
+    func swizzled_application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
+        
+        // Check if the user activity is for Universal Links
+        if userActivity.activityType == NSUserActivityTypeBrowsingWeb, let url = userActivity.webpageURL {
+            
+            // Post notification so the plugin can handle the Universal Link
+            NotificationCenter.default.post(name: Notification.Name.CDVPluginHandleOpenURL, object: url)
+            
+            // Call the original method in case other parts of the app rely on it
+            return true
+        }
+        
+        // Call the original implementation (swizzled)
+        return self.swizzled_application(application, continue: userActivity, restorationHandler: restorationHandler)
     }
     
     @objc 
