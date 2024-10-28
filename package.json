@@ -1,0 +1,12 @@
+ {
+ "name": "UniversalDeepLink",
+  "version": "1.0.0",
+  "description": "A Cordova plugin that allows https urls to be used with universal links (iOS) and Deep Link (Android).",
+  "cordova": {
+    "id": "UniversalDeepLink",
+    "platforms": [
+      "android",
+      "ios"
+    ]
+  }
+} 
