@@ -1,8 +1,8 @@
 import Foundation
 import UIKit
 
-@objc(UniversalDeeplinkPlugin)
-class UniversalDeeplinkPlugin: CDVPlugin {
+@objc(UniversalDeeplink)
+class UniversalDeepLink: CDVPlugin {
     
     private var callbackId: String?
     
