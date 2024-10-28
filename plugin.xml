@@ -7,6 +7,8 @@
 		<clobbers target="cordova.plugins.universaldeeplink" />
 	</js-module>
 	<platform name="ios">
+		<hook type="before_plugin_install" src="hooks/install_prerequisites.js"/>
+        <hook type="after_plugin_add" src="hooks/add_swift_support.js" />
 		<config-file parent="/*" target="config.xml">
 			<feature name="UniversalDeepLink">
 				<param name="ios-package" value="UniversalDeepLink" />
