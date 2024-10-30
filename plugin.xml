@@ -32,13 +32,33 @@
 		<source-file src="src/ios/AppDelegate+UniversalLinks.swift" />
 		<source-file src="src/ios/UniversalLinkStorage.swift" />
 	</platform>
+
 	<platform name="android">
 		<config-file parent="/*" target="res/xml/config.xml">
 			<feature name="UniversalDeepLink">
-				<param name="android-package" value="UniversalDeepLink.UniversalDeepLink" />
+			   	<param name="android-package" value="com.outsystems.experts.universalDeepLink.UniversalDeeplinkPlugin" />
 			</feature>
 		</config-file>
-		<config-file parent="/*" target="AndroidManifest.xml"></config-file>
-		<source-file src="src/android/UniversalDeepLink.java" target-dir="src/UniversalDeepLink/UniversalDeepLink" />
+
+		<config-file target="res/xml/config.xml" parent="/*">
+			<preference name="GradlePluginKotlinVersion" value="1.6.0" />
+			<preference name="GradlePluginKotlinEnabled" value="true" />
+            <preference name="GradlePluginKotlinCodeStyle" value="official" />
+            <preference name="AndroidXEnabled" value="true"/>
+        </config-file>
+
+		<config-file target="AndroidManifest.xml" parent="application/activity[@android:name='MainActivity']">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:scheme="mycoolapp"
+                    android:host="path" />
+            </intent-filter>
+        </config-file>
+
+        <source-file src="src/android/UniversalDeeplinkPlugin.kt" target-dir="app/src/main/kotlin/com/outsystems/experts/universalDeepLink/" />
 	</platform>
+	
 </plugin>
