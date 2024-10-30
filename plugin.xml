@@ -4,17 +4,33 @@
 	xmlns:android="http://schemas.android.com/apk/res/android">
 	<name>UniversalDeepLink</name>
 	<js-module name="UniversalDeepLink" src="www/UniversalDeepLink.js">
-		<clobbers target="cordova.plugins.universaldeeplink" />
+		<clobbers target="cordova.plugins.UniversalDeepLink" />
 	</js-module>
 	<platform name="ios">
+		<hook type="after_plugin_install" src="hooks/after_prepare_modify_bridging_header.js" />
 		<hook type="before_plugin_install" src="hooks/install_prerequisites.js"/>
         <hook type="after_plugin_add" src="hooks/add_swift_support.js" />
+		<config-file target="*-Info.plist" parent="CFBundleURLTypes">
+	        <array>
+	            <dict>
+	                <key>CFBundleURLName</key>
+	                <string>com.outsystems.app.url.scheme</string> <!-- TODO: Setar via input variable -->
+	                <key>CFBundleURLSchemes</key>
+	                <array>
+	                    <string>yourAppScheme</string> <!-- TODO: Setar via input variable -->
+	                </array>
+	            </dict>
+	        </array>
+	    </config-file>
 		<config-file parent="/*" target="config.xml">
 			<feature name="UniversalDeepLink">
 				<param name="ios-package" value="UniversalDeepLink" />
+				<param name="onload" value="true" />
 			</feature>
 		</config-file>
 		<source-file src="src/ios/UniversalDeepLink.swift" />
+		<source-file src="src/ios/AppDelegate+UniversalLinks.swift" />
+		<source-file src="src/ios/UniversalLinkStorage.swift" />
 	</platform>
 	<platform name="android">
 		<config-file parent="/*" target="res/xml/config.xml">

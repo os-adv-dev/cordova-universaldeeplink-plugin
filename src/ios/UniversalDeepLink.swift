@@ -1,90 +1,72 @@
+//
+//  UniversalDeeplink.swift
+//
+//  Created by Andre Grillo on 30/10/2024.
+//
+
 import Foundation
 import UIKit
 
-@objc(UniversalDeeplink)
-class UniversalDeeplink: CDVPlugin {
+@objc(UniversalDeepLink)
+class UniversalDeepLink: NSObject {
+
+    var callbackId: String?
     
-    private var callbackId: String?
-    
-    override func pluginInitialize() {
-        super.pluginInitialize()
-        swizzleAppDelegateMethod()
-    }
-    
-    private func swizzleAppDelegateMethod() {
-        guard let originalMethod = class_getInstanceMethod(AppDelegate.self, #selector(AppDelegate.application(_:continue:restorationHandler:))),
-              let swizzledMethod = class_getInstanceMethod(UniversalDeeplinkPlugin.self, #selector(UniversalDeeplinkPlugin.swizzled_application(_:continue:restorationHandler:))) else {
-            return
-        }
-        
-        method_exchangeImplementations(originalMethod, swizzledMethod)
-    }
-    
-    @objc 
-    func swizzled_application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([UIUserActivityRestoring]?) -> Void) -> Bool {
-        
-        // Check if the user activity is for Universal Links
-        if userActivity.activityType == NSUserActivityTypeBrowsingWeb, let url = userActivity.webpageURL {
-            
-            // Post notification so the plugin can handle the Universal Link
-            NotificationCenter.default.post(name: Notification.Name.CDVPluginHandleOpenURL, object: url)
-            
-            // Call the original method in case other parts of the app rely on it
-            return true
-        }
-        
-        // Call the original implementation (swizzled)
-        return self.swizzled_application(application, continue: userActivity, restorationHandler: restorationHandler)
-    }
-    
-    @objc 
-    func getUniversalDeeplinkData(_ command: CDVInvokedUrlCommand) {
+    @obj(setUniversalLinkCallback:)
+    func setUniversalLinkCallback(command: CDVInvokedUrlCommand) {
+
         callbackId = command.callbackId
-        if let url = UIApplication.shared.delegate?.window??.rootViewController?.presentedViewController as? UIViewController {
+        
+        // Add observer for Universal Links received while the app is running
+        NotificationCenter.default.addObserver(self, selector: #selector(handleUniversalLink(notification:)), name: Notification.Name("UniversalLinkReceived"), object: nil)
+        
+        // Check if there is a stored Universal Link from app launch and handle it if present
+        if let initialURL = UniversalLinkStorage.shared.storedUniversalLinkURL {
+            processUniversalLink(initialURL)
+            // Clear the stored URL after handling it to avoid duplicate handling
+            UniversalLinkStorage.shared.storedUniversalLinkURL = nil
+        }
+    }
+    
+    @objc 
+    func handleUniversalLink(notification: Notification) {
+        // Handle the Universal Link received while the app is running
+        if let url = notification.object as? URL {
             processUniversalLink(url)
         }
+    }
+    
+    private func processUniversalLink(_ url: URL) {
+        // Logic to handle the Universal Link
+        print("Universal Link received: \(url.absoluteString)")
         
-        let pluginResult = CDVPluginResult(status: CDVCommandStatus_NO_RESULT)
-        pluginResult?.setKeepCallbackAs(true)
-        commandDelegate.send(pluginResult, callbackId: callbackId)
-    }
-    
-    private func processUniversalLink(_ universalLink: URL) {
-        DispatchQueue.global(qos: .background).async {
-            self.sendLinkDataToCallback(universalLink)
+        // Extracting a token from the URL's query parameters
+        if let token = url.queryParameters?["token"] {
+            print("Token from Universal Link: \(token)")
+            // Use the token or pass it to your app logic as needed
         }
-    }
-    
-    private func sendLinkDataToCallback(_ universalLink: URL) {
-        do {
-            var result = [String: Any]()
-            result["url"] = universalLink.absoluteString
-            result["token"] = universalLink.queryParameters?["token"]
-            
-            let jsonData = try JSONSerialization.data(withJSONObject: result, options: [])
-            if let jsonString = String(data: jsonData, encoding: .utf8) {
-                let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: jsonString)
-                pluginResult?.setKeepCallbackAs(true)
-                commandDelegate.send(pluginResult, callbackId: callbackId)
-            }
-        } catch {
-            let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Failed to parse link")
-            pluginResult?.setKeepCallbackAs(true)
-            commandDelegate.send(pluginResult, callbackId: callbackId)
-        }
+
+        //MARK: TODO - Ajustar o que será devolvido (messageAs)
+        let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: token)
+        self.commandDelegate.send(pluginResult, callbackId: self.callbackId)
+        self.callbackId = nil
     }
     
     deinit {
-        NotificationCenter.default.removeObserver(self, name: Notification.Name.CDVPluginHandleOpenURL, object: nil)
+        // Remove observer on deinitialization
+        NotificationCenter.default.removeObserver(self, name: Notification.Name("UniversalLinkReceived"), object: nil)
+        UniversalLinkStorage.shared.storedUniversalLinkURL = nil
     }
 }
 
+// URL extension for query parameter extraction
 extension URL {
     var queryParameters: [String: String]? {
         guard let components = URLComponents(url: self, resolvingAgainstBaseURL: true),
               let queryItems = components.queryItems else {
             return nil
         }
+        
         var params = [String: String]()
         for item in queryItems {
             params[item.name] = item.value
