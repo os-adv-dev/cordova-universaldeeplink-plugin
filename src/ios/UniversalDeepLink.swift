@@ -43,7 +43,6 @@ class UniversalDeepLink: NSObject {
         // Extracting a token from the URL's query parameters
         if let token = url.queryParameters?["token"] {
             print("Token from Universal Link: \(token)")
-            // Use the token or pass it to your app logic as needed
         }
 
         //MARK: TODO - Ajustar o que será devolvido (messageAs)
