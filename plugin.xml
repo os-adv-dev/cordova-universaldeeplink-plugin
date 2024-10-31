@@ -10,18 +10,19 @@
 		<hook type="after_plugin_install" src="hooks/after_prepare_modify_bridging_header.js" />
 		<hook type="before_plugin_install" src="hooks/install_prerequisites.js"/>
         <hook type="after_plugin_add" src="hooks/add_swift_support.js" />
-		<config-file target="*-Info.plist" parent="CFBundleURLTypes">
+        <hook type="after_plugin_install" src="hooks/ios_set_applinks.js" />
+		<!--<config-file target="*-Info.plist" parent="CFBundleURLTypes">
 	        <array>
 	            <dict>
 	                <key>CFBundleURLName</key>
-	                <string>com.outsystems.app.url.scheme</string> <!-- TODO: Setar via input variable -->
+	                <string>com.outsystems.app.url.scheme</string>
 	                <key>CFBundleURLSchemes</key>
 	                <array>
-	                    <string>yourAppScheme</string> <!-- TODO: Setar via input variable -->
+	                    <string>yourAppScheme</string>
 	                </array>
 	            </dict>
 	        </array>
-	    </config-file>
+	    </config-file>-->
 		<config-file parent="/*" target="config.xml">
 			<feature name="UniversalDeepLink">
 				<param name="ios-package" value="UniversalDeepLink" />
