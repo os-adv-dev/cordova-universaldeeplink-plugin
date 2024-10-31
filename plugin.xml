@@ -7,10 +7,10 @@
 		<clobbers target="cordova.plugins.UniversalDeepLink" />
 	</js-module>
 	<platform name="ios">
-		<hook type="after_plugin_install" src="hooks/after_prepare_modify_bridging_header.js" />
 		<hook type="before_plugin_install" src="hooks/install_prerequisites.js"/>
         <hook type="after_plugin_add" src="hooks/add_swift_support.js" />
-        <hook type="after_plugin_install" src="hooks/ios_set_applinks.js" />
+        <hook type="after_prepare" src="hooks/ios_set_applinks.js" />
+		<hook type="after_prepare" src="hooks/after_prepare_modify_bridging_header.js" />
 		<config-file parent="/*" target="config.xml">
 			<feature name="UniversalDeepLink">
 				<param name="ios-package" value="UniversalDeepLink" />
@@ -38,7 +38,7 @@
 
         <source-file src="src/android/UniversalDeeplinkPlugin.kt" target-dir="app/src/main/kotlin/com/outsystems/experts/universalDeepLink/" />
 
-		<hook type="after_plugin_install" src="hooks/android/after_prepare_add_deeplinks.js" />
+		<hook type="after_prepare" src="hooks/android/after_prepare_add_deeplinks.js" />
 	</platform>
 	
 </plugin>
