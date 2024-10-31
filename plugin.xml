@@ -48,18 +48,9 @@
             <preference name="AndroidXEnabled" value="true"/>
         </config-file>
 
-		<config-file target="AndroidManifest.xml" parent="application/activity[@android:name='MainActivity']">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="mycoolapp"
-                    android:host="path" />
-            </intent-filter>
-        </config-file>
-
         <source-file src="src/android/UniversalDeeplinkPlugin.kt" target-dir="app/src/main/kotlin/com/outsystems/experts/universalDeepLink/" />
+
+		<hook type="after_plugin_install" src="hooks/android/after_prepare_add_deeplinks.js" />
 	</platform>
 	
 </plugin>

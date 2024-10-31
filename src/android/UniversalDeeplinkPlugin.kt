@@ -8,7 +8,6 @@ import org.apache.cordova.CallbackContext
 import org.apache.cordova.CordovaPlugin
 import org.apache.cordova.PluginResult
 import org.json.JSONArray
-import org.json.JSONObject
 
 private const val TAG = "UniversalDeeplinkPlugin"
 private const val SET_UNIVERSAL_LINK_CALLBACK = "setUniversalLinkCallback"
@@ -34,11 +33,9 @@ class UniversalDeeplinkPlugin : CordovaPlugin() {
             cordova.activity.intent?.let { intent ->
                 handleIntent(intent)
             }
-
-            val pluginResult = PluginResult(PluginResult.Status.NO_RESULT)
-            pluginResult.keepCallback = true
-            callbackContext.sendPluginResult(pluginResult)
             return true
+        } else {
+            this.callbackContext?.error("This Action $action is not handled in this plugin")
         }
 
         return false
@@ -57,10 +54,7 @@ class UniversalDeeplinkPlugin : CordovaPlugin() {
     private fun setUniversalLinkCallback(data: Uri) {
         scope.launch(Dispatchers.Main) {
             try {
-                val result = JSONObject().apply {
-                    put("url", data.toString())
-                }
-                val pluginResult = PluginResult(PluginResult.Status.OK, result)
+                val pluginResult = PluginResult(PluginResult.Status.OK, data.toString())
                 pluginResult.keepCallback = true
                 callbackContext?.sendPluginResult(pluginResult)
             } catch (e: Exception) {
