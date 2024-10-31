@@ -48,7 +48,7 @@ module.exports = function (context) {
 
         // Define the intent-filter template
         const intentFilterTemplate = `
-            <intent-filter>
+            <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
