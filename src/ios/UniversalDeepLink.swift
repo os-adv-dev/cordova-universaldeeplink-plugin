@@ -31,8 +31,8 @@ class UniversalDeepLink: CDVPlugin {
     
     private func processUniversalLink(_ url: URL) {
         let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: url.absoluteString)
+        pluginResult?.setKeepCallbackAs(true)
         self.commandDelegate.send(pluginResult, callbackId: self.callbackId)
-        self.callbackId = nil
     }
     
     deinit {
