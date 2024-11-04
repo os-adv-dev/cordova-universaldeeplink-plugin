@@ -30,9 +30,26 @@ class UniversalDeepLink: CDVPlugin {
     }
     
     private func processUniversalLink(_ url: URL) {
-        let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: url.absoluteString)
-        pluginResult?.setKeepCallbackAs(true)
-        self.commandDelegate.send(pluginResult, callbackId: self.callbackId)
+        // Get all query parameters as a dictionary
+        if let queryParams = url.queryParameters {
+            // Convert the dictionary to JSON data
+            if let jsonData = try? JSONSerialization.data(withJSONObject: queryParams, options: []),
+               let jsonString = String(data: jsonData, encoding: .utf8) {
+                // Send the JSON string as a result back to Cordova
+                let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: jsonString)
+                pluginResult?.setKeepCallbackAs(true)
+                self.commandDelegate.send(pluginResult, callbackId: self.callbackId)
+            } else {
+                // If JSON conversion fails, send an error message
+                let errorResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Failed to parse query parameters.")
+                self.commandDelegate.send(errorResult, callbackId: self.callbackId)
+            }
+        } else {
+            // If there are no query parameters, send an empty JSON object
+            let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: "{}")
+            pluginResult?.setKeepCallbackAs(true)
+            self.commandDelegate.send(pluginResult, callbackId: self.callbackId)
+        }
     }
     
     deinit {
