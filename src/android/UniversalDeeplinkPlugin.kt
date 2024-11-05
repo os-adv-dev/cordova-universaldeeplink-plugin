@@ -66,7 +66,7 @@ class UniversalDeeplinkPlugin : CordovaPlugin() {
                     }
                 }
 
-                val pluginResult = PluginResult(PluginResult.Status.OK, jsonResult)
+                val pluginResult = PluginResult(PluginResult.Status.OK, jsonResult.toString())
                 pluginResult.keepCallback = true
                 callbackContext?.sendPluginResult(pluginResult)
             } catch (e: Exception) {
