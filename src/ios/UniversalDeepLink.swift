@@ -31,9 +31,10 @@ class UniversalDeepLink: CDVPlugin {
     
     private func processUniversalLink(_ url: URL) {
         // Get all query parameters as a dictionary
-        if let queryParams = url.queryParameters {
+        if var jsonDict = url.queryParameters {
+            jsonDict["url"] = url.absoluteString
             // Convert the dictionary to JSON data
-            if let jsonData = try? JSONSerialization.data(withJSONObject: queryParams, options: []),
+            if let jsonData = try? JSONSerialization.data(withJSONObject: jsonDict, options: []),
                let jsonString = String(data: jsonData, encoding: .utf8) {
                 // Send the JSON string as a result back to Cordova
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: jsonString)
