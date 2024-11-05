@@ -44,6 +44,7 @@ class UniversalDeeplinkPlugin : CordovaPlugin() {
     private fun handleIntent(intent: Intent?) {
         scope.launch(Dispatchers.IO) {
             intent?.data?.let { data ->
+                Log.d(TAG, "Received full URL: $data")
                 if (callbackContext != null) {
                     setUniversalLinkCallback(data)
                 }
@@ -54,7 +55,18 @@ class UniversalDeeplinkPlugin : CordovaPlugin() {
     private fun setUniversalLinkCallback(data: Uri) {
         scope.launch(Dispatchers.Main) {
             try {
-                val pluginResult = PluginResult(PluginResult.Status.OK, data.toString())
+                val url = data.toString()
+                val jsonResult = org.json.JSONObject().apply {
+                    put("url", url)
+                }
+
+                data.queryParameterNames.forEach { key ->
+                    data.getQueryParameter(key)?.let { value ->
+                        jsonResult.put(key, value)
+                    }
+                }
+
+                val pluginResult = PluginResult(PluginResult.Status.OK, jsonResult)
                 pluginResult.keepCallback = true
                 callbackContext?.sendPluginResult(pluginResult)
             } catch (e: Exception) {
