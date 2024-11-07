@@ -6,22 +6,7 @@
 	<js-module name="UniversalDeepLink" src="www/UniversalDeepLink.js">
 		<clobbers target="cordova.plugins.UniversalDeepLink" />
 	</js-module>
-	<platform name="ios">
-		<hook type="before_plugin_install" src="hooks/install_prerequisites.js"/>
-        <hook type="after_plugin_add" src="hooks/add_swift_support.js" />
-        <hook type="after_prepare" src="hooks/ios_set_applinks.js" />
-		<hook type="after_prepare" src="hooks/after_prepare_modify_bridging_header.js" />
-		<config-file parent="/*" target="config.xml">
-			<feature name="UniversalDeepLink">
-				<param name="ios-package" value="UniversalDeepLink" />
-				<param name="onload" value="true" />
-			</feature>
-		</config-file>
-		<source-file src="src/ios/UniversalDeepLink.swift" />
-		<source-file src="src/ios/AppDelegate+UniversalLinks.swift" />
-		<source-file src="src/ios/UniversalLinkStorage.swift" />
-	</platform>
-
+	
 	<platform name="android">
 		<config-file parent="/*" target="res/xml/config.xml">
 			<feature name="UniversalDeepLink">
