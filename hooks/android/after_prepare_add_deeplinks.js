@@ -31,7 +31,7 @@ module.exports = function (context) {
 
         for (const arg of args) {
             if (arg.includes(`${appId}=`)) {
-                applinksString = arg.split(',').slice(-1).pop();
+                applinksString = arg.split('=')[1];
             }
         }
 
@@ -74,9 +74,21 @@ module.exports = function (context) {
         const schemes = new Set();
 
         applinks.forEach(url => {
-            const urlObj = new URL(url);
-            schemes.add(urlObj.protocol.slice(0, -1)); // Add scheme (remove trailing colon)
-            hosts.add(urlObj.host); // Add host
+            try {
+                const urlObj = new URL(url);
+                const scheme = urlObj.protocol.slice(0, -1); // Remove trailing colon
+                const host = urlObj.host;
+
+                // Print each URL's scheme and host
+                console.log(`🔑 Found scheme: ${scheme}`);
+                console.log(`🌐 Found host: ${host}`);
+
+                schemes.add(scheme);
+                hosts.add(host);
+            } catch (error) {
+                console.error(`❌ Invalid URL format: "${url}". Please check the URL.`);
+                reject(`Invalid URL format: "${url}"`);
+            }
         });
 
         const schemeDataTags = Array.from(schemes).map(scheme => `<data android:scheme="${scheme}" />`).join('\n');
