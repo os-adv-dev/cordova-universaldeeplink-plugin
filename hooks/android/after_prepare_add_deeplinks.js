@@ -31,7 +31,7 @@ module.exports = function (context) {
 
         for (const arg of args) {
             if (arg.includes(`${appId}=`)) {
-                applinksString = arg.split('=').slice(-1).pop();
+                applinksString = arg.split(',').slice(-1).pop();
             }
         }
 
