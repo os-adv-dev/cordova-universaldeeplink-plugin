@@ -10,9 +10,9 @@ module.exports = function (context) {
 
     console.log('🔍 Parsing process arguments for plugin installation...');
     args.forEach(arg => {
-        if (arg.includes(',')) {
-            const [key, value] = arg.split(',');
-            applinks[key] = value;
+        if (arg.includes('=')) {
+            const [key, value] = arg.split('=');
+            applinks[key.trim()] = value.trim();
         }
     });
 
@@ -21,6 +21,10 @@ module.exports = function (context) {
     console.log(`📂 Saving applinks to: ${applinksFilePath}`);
 
     // Save the applinks object to applinks.json
-    fs.writeFileSync(applinksFilePath, JSON.stringify(applinks, null, 2), 'utf-8');
-    console.log('✅ Applinks saved successfully!');
+    try {
+        fs.writeFileSync(applinksFilePath, JSON.stringify(applinks, null, 2), 'utf-8');
+        console.log('✅ Applinks saved successfully!');
+    } catch (error) {
+        console.error(`❌ Error saving applinks to file: ${error.message}`);
+    }
 };
