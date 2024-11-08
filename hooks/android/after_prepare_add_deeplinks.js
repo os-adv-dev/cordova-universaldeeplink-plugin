@@ -5,6 +5,7 @@ const et = require('elementtree');
 module.exports = function (context) {
     const platformRoot = path.join(context.opts.projectRoot, 'platforms/android');
     const manifestFile = path.join(platformRoot, 'app/src/main/AndroidManifest.xml');
+    const applinksFile = path.join(context.opts.projectRoot, 'applinks.json');
 
     // Function to retrieve the App ID from config.xml
     function getAppId(context) {
@@ -22,27 +23,24 @@ module.exports = function (context) {
         return appId;
     }
 
-    // Retrieve the applinks variable from process arguments using the App ID
-    function getApplinksFromArgs(appId) {
-        console.log(`---- 📱 --- Parsing applinks from process arguments for App ID: ${appId}...`);
-
-        const args = process.argv;
-        let applinksString;
-
-        for (const arg of args) {
-            if (arg.includes(`${appId}=`)) {
-                applinksString = arg.split('=')[1];
-            }
-        }
-
-        if (!applinksString) {
-            console.error(`--- ❌ Error: No variable found for App ID "${appId}" in process arguments.`);
+    // Function to retrieve applinks for the given app ID from applinks.json
+    function getApplinksForAppId(appId) {
+        if (!fs.existsSync(applinksFile)) {
+            console.error(`-- ❌ -- Error: applinks.json not found at path: ${applinksFile}`);
             return [];
         }
 
-        console.log(`--- ✅ -- Raw applinks string for App ID "${appId}": ${applinksString}`);
-        const applinksArray = applinksString.split(',').map(link => link.trim());
-        console.log(`--- ✅ -- Formatted applinks: ${applinksArray}`);
+        const applinksData = JSON.parse(fs.readFileSync(applinksFile, 'utf-8'));
+
+        // Check if the appId exists in applinks.json
+        if (!applinksData[appId]) {
+            console.error(`-- ❌ -- No applinks found for App ID: ${appId} in applinks.json`);
+            return [];
+        }
+
+        // Split the URLs by comma and trim each URL
+        const applinksArray = applinksData[appId].split(',').map(link => link.trim());
+        console.log(`--- ✅ -- Applinks for App ID "${appId}": ${applinksArray}`);
 
         return applinksArray;
     }
@@ -53,7 +51,7 @@ module.exports = function (context) {
         return Promise.reject("--- ❌ Could not determine App ID.");
     }
 
-    const applinks = getApplinksFromArgs(appId);
+    const applinks = getApplinksForAppId(appId);
     if (applinks.length === 0) {
         console.warn("--- ❌ Warning: No applinks found for the current App ID.");
         return Promise.reject("--- ❌ No applinks found for the current App ID.");
