@@ -36,27 +36,27 @@ module.exports = function (context) {
         }
 
         if (!applinksString) {
-            console.error(`Error: No variable found for App ID "${appId}" in process arguments.`);
+            console.error(`--- ❌ Error: No variable found for App ID "${appId}" in process arguments.`);
             return [];
         }
 
-        console.log(`Raw applinks string for App ID "${appId}": ${applinksString}`);
+        console.log(`--- ✅ -- Raw applinks string for App ID "${appId}": ${applinksString}`);
         const applinksArray = applinksString.split(',').map(link => link.trim());
-        console.log(`Formatted applinks: ${applinksArray}`);
+        console.log(`--- ✅ -- Formatted applinks: ${applinksArray}`);
 
         return applinksArray;
     }
 
     const appId = getAppId(context);
     if (!appId) {
-        console.error("Error: Could not determine App ID from config.xml.");
-        return Promise.reject("Could not determine App ID.");
+        console.error("--- ❌ Error: Could not determine App ID from config.xml.");
+        return Promise.reject("--- ❌ Could not determine App ID.");
     }
 
     const applinks = getApplinksFromArgs(appId);
     if (applinks.length === 0) {
-        console.warn("Warning: No applinks found for the current App ID.");
-        return Promise.reject("No applinks found for the current App ID.");
+        console.warn("--- ❌ Warning: No applinks found for the current App ID.");
+        return Promise.reject("--- ❌ No applinks found for the current App ID.");
     }
 
     console.log("🔍 Checking for AndroidManifest.xml...");
@@ -122,7 +122,7 @@ module.exports = function (context) {
             resolve();
         } else {
             console.error("❌ Could not find MainActivity in AndroidManifest.xml");
-            reject("MainActivity not found in AndroidManifest.xml");
+            reject("--- ❌ MainActivity not found in AndroidManifest.xml");
         }
     });
 };
