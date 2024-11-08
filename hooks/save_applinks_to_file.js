@@ -9,10 +9,14 @@ module.exports = function (context) {
     const applinks = {};
 
     console.log('🔍 Parsing process arguments for plugin installation...');
+
     args.forEach(arg => {
-        if (arg.includes('=')) {
-            const [key, value] = arg.split('=');
-            applinks[key.trim()] = value.trim();
+        // Check if the argument contains a variable definition in the form "name=value"
+        const equalsIndex = arg.indexOf('=');
+        if (equalsIndex > 0) {
+            const key = arg.substring(0, equalsIndex).trim(); // Get everything before the first '='
+            const value = arg.substring(equalsIndex + 1).trim(); // Get everything after the first '='
+            applinks[key] = value; // Add to applinks object
         }
     });
 
