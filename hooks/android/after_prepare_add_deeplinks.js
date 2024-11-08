@@ -10,7 +10,7 @@ module.exports = function (context) {
     function getAppId(context) {
         const configXmlPath = path.join(context.opts.projectRoot, 'config.xml');
         if (!fs.existsSync(configXmlPath)) {
-            console.error(`Error: config.xml not found at path: ${configXmlPath}`);
+            console.error(`-- ❌ -- Error: config.xml not found at path: ${configXmlPath}`);
             return null;
         }
 
@@ -18,13 +18,13 @@ module.exports = function (context) {
         const etree = et.parse(configXmlContent);
         const appId = etree.getroot().attrib.id;
 
-        console.log(`App ID found: ${appId}`);
+        console.log(`---- 📱 --- App ID found: ${appId}`);
         return appId;
     }
 
     // Retrieve the applinks variable from process arguments using the App ID
     function getApplinksFromArgs(appId) {
-        console.log(`Parsing applinks from process arguments for App ID: ${appId}...`);
+        console.log(`---- 📱 --- Parsing applinks from process arguments for App ID: ${appId}...`);
 
         const args = process.argv;
         let applinksString;
