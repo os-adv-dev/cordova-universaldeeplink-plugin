@@ -1,43 +1,71 @@
 const fs = require('fs');
 const path = require('path');
+const et = require('elementtree');
 
 module.exports = function (context) {
     const platformRoot = path.join(context.opts.projectRoot, 'platforms/android');
     const manifestFile = path.join(platformRoot, 'app/src/main/AndroidManifest.xml');
-    
-    // Retrieve APPLINKS from the plugin variables
-    const args = process.argv;
-    let applinksVariable;
 
-    for (const arg of args) {  
-        if (arg.includes('APPLINKS')) {
-            applinksVariable = arg.split("=").slice(-1).pop();
+    // Function to retrieve the App ID from config.xml
+    function getAppId(context) {
+        const configXmlPath = path.join(context.opts.projectRoot, 'config.xml');
+        if (!fs.existsSync(configXmlPath)) {
+            console.error(`Error: config.xml not found at path: ${configXmlPath}`);
+            return null;
         }
+
+        const configXmlContent = fs.readFileSync(configXmlPath).toString();
+        const etree = et.parse(configXmlContent);
+        const appId = etree.getroot().attrib.id;
+
+        console.log(`App ID found: ${appId}`);
+        return appId;
     }
 
-    console.log("🔍 Checking for APPLINKS variable... ", applinksVariable);
+    // Retrieve the applinks variable from process arguments using the App ID
+    function getApplinksFromArgs(appId) {
+        console.log(`Parsing applinks from process arguments for App ID: ${appId}...`);
 
-    if (!(applinksVariable)) {
-        throw new Error('APPLINKS variable not provided. Please pass the APPLINKS parameter to use the plugin.');
+        const args = process.argv;
+        let applinksString;
+
+        for (const arg of args) {
+            if (arg.includes(`${appId}=`)) {
+                applinksString = arg.split('=').slice(-1).pop();
+            }
+        }
+
+        if (!applinksString) {
+            console.error(`Error: No variable found for App ID "${appId}" in process arguments.`);
+            return [];
+        }
+
+        console.log(`Raw applinks string for App ID "${appId}": ${applinksString}`);
+        const applinksArray = applinksString.split(',').map(link => link.trim());
+        console.log(`Formatted applinks: ${applinksArray}`);
+
+        return applinksArray;
+    }
+
+    const appId = getAppId(context);
+    if (!appId) {
+        console.error("Error: Could not determine App ID from config.xml.");
+        return Promise.reject("Could not determine App ID.");
+    }
+
+    const applinks = getApplinksFromArgs(appId);
+    if (applinks.length === 0) {
+        console.warn("Warning: No applinks found for the current App ID.");
+        return Promise.reject("No applinks found for the current App ID.");
+    }
+
+    console.log("🔍 Checking for AndroidManifest.xml...");
+    if (!fs.existsSync(manifestFile)) {
+        console.error(`❌ AndroidManifest.xml not found: ${manifestFile}`);
+        return Promise.reject(`AndroidManifest.xml not found: ${manifestFile}`);
     }
 
     return new Promise((resolve, reject) => {
-        if (!applinksVariable) {
-            console.error(`❌ APPLINKS variable not provided. Please pass the APPLINKS parameter to use the plugin.`);
-            return reject(`.APPLINKS variable not provided. Please pass the APPLINKS parameter to use the plugin`);
-        }
-
-        // Split the APPLINKS variable into an array
-        const applinks = applinksVariable.split(',').map(link => link.trim());
-        console.log(`🌐 URLs loaded: ${applinks.join(", ")}`);
-
-        // Read the AndroidManifest.xml
-        console.log("🔍 Checking for AndroidManifest.xml...");
-        if (!fs.existsSync(manifestFile)) {
-            console.error(`❌ AndroidManifest.xml not found: ${manifestFile}`);
-            return reject(`AndroidManifest.xml not found: ${manifestFile}`);
-        }
-
         console.log("✅ AndroidManifest.xml found. Modifying intent filters...");
         let manifestContent = fs.readFileSync(manifestFile, 'utf-8');
 
