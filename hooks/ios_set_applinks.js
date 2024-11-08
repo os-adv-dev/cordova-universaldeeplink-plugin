@@ -75,6 +75,20 @@ module.exports = function (context) {
         }
     }
 
+    //Get Project Name
+
+    function getProjectName() {
+        var config = fs.readFileSync('config.xml').toString();
+        var parseString = require('xml2js').parseString;
+        var name;
+        parseString(config, function (err, result) {
+            name = result.widget.name.toString();
+            const r = /\B\s+|\s+\B/g;  //Removes trailing and leading spaces
+            name = name.replace(r, '');
+        });
+        return name || null;
+    }
+
     console.log('🚀 Starting iOS hook for Universal Links...');
 
     const appId = getAppId(context);
@@ -89,10 +103,12 @@ module.exports = function (context) {
         return;
     }
 
+    let projectName = getProjectName();
+
     console.log(`📂 Preparing to update entitlements for App ID: ${appId}`);
     const entitlementsFiles = [
-        path.join(projectRoot, `platforms/ios/${appId}/Entitlements-Debug.plist`),
-        path.join(projectRoot, `platforms/ios/${appId}/Entitlements-Release.plist`)
+        path.join(projectRoot, `platforms/ios/${projectName}/Entitlements-Debug.plist`),
+        path.join(projectRoot, `platforms/ios/${projectName}/Entitlements-Release.plist`)
     ];
 
     entitlementsFiles.forEach(entitlementsFilePath => {
