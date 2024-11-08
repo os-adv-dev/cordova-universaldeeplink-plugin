@@ -1,58 +1,54 @@
 const fs = require('fs');
 const path = require('path');
-const xml2js = require('xml2js');
+const et = require('elementtree');
 
 module.exports = function(context) {
     const projectRoot = context.opts.projectRoot;
 
-    function getProjectName() {
-        console.log('Reading project name from config.xml...');
-        const configPath = path.join(projectRoot, 'config.xml');
-        
-        if (!fs.existsSync(configPath)) {
-            console.error(`Error: config.xml not found at path: ${configPath}`);
+    // Function to retrieve the App ID from config.xml
+    function getAppId(context) {
+        const configXmlPath = path.join(context.opts.projectRoot, 'config.xml');
+        if (!fs.existsSync(configXmlPath)) {
+            console.error(`Error: config.xml not found at path: ${configXmlPath}`);
             return null;
         }
-        
-        const config = fs.readFileSync(configPath).toString();
-        let name = null;
-        
-        xml2js.parseString(config, (err, result) => {
-            if (err) throw err;
-            name = result.widget.name[0].trim();
-            console.log(`Project name found: ${name}`);
-        });
-        
-        return name;
+
+        const configXmlContent = fs.readFileSync(configXmlPath).toString();
+        const etree = et.parse(configXmlContent);
+        const appId = etree.getroot().attrib.id;
+
+        console.log(`App ID found: ${appId}`);
+        return appId;
     }
 
-    function getApplinksFromArgs() {
+    // Function to retrieve the applinks string based on the App ID
+    function getApplinksFromArgs(appId) {
         console.log('Parsing applinks from process arguments...');
-        
+
         const args = process.argv;
         let applinksString;
-        for (const arg of args) {  
-            if (arg.includes('APPLINKS')) {
+
+        for (const arg of args) {
+            if (arg.includes(`${appId}=`)) {
                 const stringArray = arg.split('=');
                 applinksString = stringArray.slice(-1).pop();
             }
         }
-        
+
         if (!applinksString) {
-            console.error('Error: APPLINKS argument not found in process arguments.');
+            console.error(`Error: No variable found for App ID "${appId}" in process arguments.`);
             return [];
         }
-        
-        console.log(`Raw applinks string: ${applinksString}`);
-        
+
+        console.log(`Raw applinks string for App ID "${appId}": ${applinksString}`);
+
         // Split the string into individual URLs, trim spaces, and format them
         const applinksArray = applinksString
             .split(',')
             .map(url => url.trim()) // Remove extra spaces around URLs
             .map(url => 'applinks:' + url.replace(/^https?:\/\//, '')); // Add prefix and remove http/https
 
-        console.log(`Applinks found and formatted: ${applinksArray}`);
-        
+        console.log(`Formatted applinks: ${applinksArray}`);
         return applinksArray;
     }
 
@@ -65,7 +61,6 @@ module.exports = function(context) {
         }
 
         let entitlementsContent = fs.readFileSync(entitlementsFilePath, 'utf-8');
-        //console.log(`Original entitlements file content:\n${entitlementsContent}`);
         
         const applinksXmlArray = applinksArray.map(url => `\t\t<string>${url}</string>`).join('\n');
         const associatedDomainsEntry = `
@@ -78,7 +73,6 @@ module.exports = function(context) {
         // Check if </dict> exists at the end and replace it with the new entry
         if (entitlementsContent.includes('</dict>')) {
             entitlementsContent = entitlementsContent.replace(/<\/dict>\n<\/plist>/, associatedDomainsEntry);
-            //console.log(`Modified entitlements file content:\n${entitlementsContent}`);
             
             // Write the updated content back to the entitlements file
             fs.writeFileSync(entitlementsFilePath, entitlementsContent, 'utf-8');
@@ -88,21 +82,21 @@ module.exports = function(context) {
         }
     }
 
-    const projectName = getProjectName();
-    if (!projectName) {
-        console.error("Error: Could not determine project name from config.xml.");
+    const appId = getAppId(context);
+    if (!appId) {
+        console.error("Error: Could not determine App ID from config.xml.");
         return;
     }
 
-    const applinksArray = getApplinksFromArgs();
+    const applinksArray = getApplinksFromArgs(appId);
     if (applinksArray.length === 0) {
-        console.warn("Warning: No applinks found in process arguments.");
+        console.warn("Warning: No applinks found for the current App ID.");
         return;
     }
 
     const entitlementsFiles = [
-        path.join(projectRoot, `platforms/ios/${projectName}/Entitlements-Debug.plist`),
-        path.join(projectRoot, `platforms/ios/${projectName}/Entitlements-Release.plist`)
+        path.join(projectRoot, `platforms/ios/${appId}/Entitlements-Debug.plist`),
+        path.join(projectRoot, `platforms/ios/${appId}/Entitlements-Release.plist`)
     ];
 
     entitlementsFiles.forEach(entitlementsFilePath => {
