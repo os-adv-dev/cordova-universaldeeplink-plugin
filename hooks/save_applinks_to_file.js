@@ -10,8 +10,8 @@ module.exports = function (context) {
 
     console.log('🔍 Parsing process arguments for plugin installation...');
     args.forEach(arg => {
-        if (arg.includes('=')) {
-            const [key, value] = arg.split('=');
+        if (arg.includes(',')) {
+            const [key, value] = arg.split(',');
             applinks[key] = value;
         }
     });
