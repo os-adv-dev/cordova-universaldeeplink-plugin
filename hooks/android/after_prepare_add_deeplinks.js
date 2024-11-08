@@ -4,24 +4,32 @@ const path = require('path');
 module.exports = function (context) {
     const platformRoot = path.join(context.opts.projectRoot, 'platforms/android');
     const manifestFile = path.join(platformRoot, 'app/src/main/AndroidManifest.xml');
-    const jsonFile = path.join(context.opts.projectRoot, 'www/applinks.json');
+    
+    // Retrieve APPLINKS from the plugin variables
+    const args = process.argv;
+    let applinksVariable;
 
-    console.log("🔍 Checking for JSON file with URLs...");
+    for (const arg of args) {  
+        if (arg.includes('APPLINKS')) {
+            applinksVariable = arg.split("=").slice(-1).pop();
+        }
+    }
+
+    console.log("🔍 Checking for APPLINKS variable... ", applinksVariable);
+
+    if (!(applinksVariable)) {
+        throw new Error('APPLINKS variable not provided. Please pass the APPLINKS parameter to use the plugin.');
+    }
 
     return new Promise((resolve, reject) => {
-        if (!fs.existsSync(jsonFile)) {
-            console.error(`❌ JSON file not found: ${jsonFile}`);
-            return reject(`JSON file not found: ${jsonFile}`);
+        if (!applinksVariable) {
+            console.error(`❌ APPLINKS variable not provided. Please pass the APPLINKS parameter to use the plugin.`);
+            return reject(`.APPLINKS variable not provided. Please pass the APPLINKS parameter to use the plugin`);
         }
 
-        console.log("✅ JSON file found. Reading URLs...");
-        const data = JSON.parse(fs.readFileSync(jsonFile, 'utf-8'));
-        if (!data.applinks || !Array.isArray(data.applinks)) {
-            console.error('❌ Invalid JSON format. Expected "applinks" array.');
-            return reject('Invalid JSON format. Expected "applinks" array.');
-        }
-
-        console.log(`🌐 URLs loaded: ${data.applinks.join(", ")}`);
+        // Split the APPLINKS variable into an array
+        const applinks = applinksVariable.split(',').map(link => link.trim());
+        console.log(`🌐 URLs loaded: ${applinks.join(", ")}`);
 
         // Read the AndroidManifest.xml
         console.log("🔍 Checking for AndroidManifest.xml...");
@@ -33,11 +41,11 @@ module.exports = function (context) {
         console.log("✅ AndroidManifest.xml found. Modifying intent filters...");
         let manifestContent = fs.readFileSync(manifestFile, 'utf-8');
 
-        // Extract unique hosts from URLs
+        // Extract unique hosts and schemes from URLs
         const hosts = new Set();
         const schemes = new Set();
 
-        data.applinks.forEach(url => {
+        applinks.forEach(url => {
             const urlObj = new URL(url);
             schemes.add(urlObj.protocol.slice(0, -1)); // Add scheme (remove trailing colon)
             hosts.add(urlObj.host); // Add host
