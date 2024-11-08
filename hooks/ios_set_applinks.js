@@ -4,7 +4,6 @@ const xml2js = require('xml2js');
 
 module.exports = function(context) {
     const projectRoot = context.opts.projectRoot;
-    const applinksFilePath = path.join(projectRoot, 'platforms/ios/www/applinks.json');
 
     function getProjectName() {
         console.log('Reading project name from config.xml...');
@@ -27,30 +26,34 @@ module.exports = function(context) {
         return name;
     }
 
-    function getApplinks() {
-        console.log(`Reading applinks from ${applinksFilePath}...`);
+    function getApplinksFromArgs() {
+        console.log('Parsing applinks from process arguments...');
         
-        if (!fs.existsSync(applinksFilePath)) {
-            console.error(`Error: applinks.json not found at path: ${applinksFilePath}`);
-            return [];
-        }
-        
-        try {
-            const applinksContent = fs.readFileSync(applinksFilePath, 'utf-8');
-            const applinksJson = JSON.parse(applinksContent);
-            
-            if (!Array.isArray(applinksJson.applinks)) {
-                console.error(`Error: 'applinks' key is missing or is not an array in applinks.json`);
-                return [];
+        const args = process.argv;
+        let applinksString;
+        for (const arg of args) {  
+            if (arg.includes('APPLINKS')) {
+                const stringArray = arg.split('=');
+                applinksString = stringArray.slice(-1).pop();
             }
-            
-            const formattedApplinks = applinksJson.applinks.map(url => 'applinks:' + url.replace(/^https?:\/\//, ''));
-            console.log(`Applinks found and formatted: ${formattedApplinks}`);
-            return formattedApplinks;
-        } catch (error) {
-            console.error(`Error parsing applinks.json: ${error.message}`);
+        }
+        
+        if (!applinksString) {
+            console.error('Error: APPLINKS argument not found in process arguments.');
             return [];
         }
+        
+        console.log(`Raw applinks string: ${applinksString}`);
+        
+        // Split the string into individual URLs, trim spaces, and format them
+        const applinksArray = applinksString
+            .split(',')
+            .map(url => url.trim()) // Remove extra spaces around URLs
+            .map(url => 'applinks:' + url.replace(/^https?:\/\//, '')); // Add prefix and remove http/https
+
+        console.log(`Applinks found and formatted: ${applinksArray}`);
+        
+        return applinksArray;
     }
 
     function updateEntitlementsFile(entitlementsFilePath, applinksArray) {
@@ -91,9 +94,9 @@ module.exports = function(context) {
         return;
     }
 
-    const applinksArray = getApplinks();
+    const applinksArray = getApplinksFromArgs();
     if (applinksArray.length === 0) {
-        console.warn("Warning: No applinks found in applinks.json.");
+        console.warn("Warning: No applinks found in process arguments.");
         return;
     }
 
