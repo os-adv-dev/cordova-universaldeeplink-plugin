@@ -103,26 +103,16 @@ module.exports = function (context) {
             </intent-filter>
         `;
 
-        // Find the MainActivity block
-        const activityRegex = /<activity[^>]*android:name="[^"]*MainActivity"[^>]*>([\s\S]*?)<\/activity>/;
+        // Find the MainActivity block and check if the intent-filter already exists
+        const activityRegex = /<activity[^>]*android:name="MainActivity"[^>]*>([\s\S]*?)<\/activity>/;
         const match = manifestContent.match(activityRegex);
 
         if (match) {
             console.log("✏️ Checking if <intent-filter> already exists in MainActivity...");
 
-            let activityContent = match[0];
-
-            // Modify launchMode to singleTask
-            if (activityContent.includes('android:launchMode')) {
-                console.log("🔄 Updating android:launchMode to singleTask...");
-                activityContent = activityContent.replace(/android:launchMode="[^"]*"/, 'android:launchMode="singleTask"');
-            } else {
-                console.log("➕ Adding android:launchMode='singleTask' to MainActivity...");
-                activityContent = activityContent.replace('<activity', '<activity android:launchMode="singleTask"');
-            }
-
-            // Check if intent-filter already exists
+            const activityContent = match[0];
             const intentFilterExists = /<intent-filter>[\s\S]*?<\/intent-filter>/.test(activityContent);
+
             let modifiedActivityContent;
 
             if (intentFilterExists) {
@@ -138,7 +128,7 @@ module.exports = function (context) {
 
             // Write the modified content back to AndroidManifest.xml
             fs.writeFileSync(manifestFile, manifestContent, 'utf-8');
-            console.log("✅ AndroidManifest.xml updated with deep link URLs and singleTask launchMode inside MainActivity! 🚀");
+            console.log("✅ AndroidManifest.xml updated with deep link URLs inside MainActivity! 🚀");
             resolve();
         } else {
             console.error("❌ Could not find MainActivity in AndroidManifest.xml");
