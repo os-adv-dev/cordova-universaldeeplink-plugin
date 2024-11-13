@@ -29,10 +29,6 @@ class UniversalDeeplinkPlugin : CordovaPlugin() {
 
         if (action == SET_UNIVERSAL_LINK_CALLBACK) {
             this.callbackContext = callbackContext
-
-            cordova.activity.intent?.let { intent ->
-                handleIntent(intent)
-            }
             return true
         } else {
             this.callbackContext?.error("This Action $action is not handled in this plugin")
