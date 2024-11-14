@@ -7,7 +7,7 @@
 		<clobbers target="cordova.plugins.UniversalDeepLink" />
 	</js-module>
 	<!--<preference name="APPLINKS" />-->
-	<!-- <hook type="before_plugin_install" src="hooks/save_applinks_to_file.js" /> -->
+	<hook type="before_plugin_install" src="hooks/save_applinks_to_file.js" />
 
 	<platform name="ios">
 	
