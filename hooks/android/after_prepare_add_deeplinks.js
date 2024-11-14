@@ -126,13 +126,14 @@ module.exports = function (context) {
             // Replace the activity content in the manifest with the modified version
             manifestContent = manifestContent.replace(activityContent, modifiedActivityContent);
 
+            // Find and replace the existing android:launchMode value with singleTask
+            const launchModeRegex = /(<activity[^>]*android:name="[^"]*MainActivity"[^>]*android:launchMode=")[^"]*(")/;
+            manifestContent = manifestContent.replace(launchModeRegex, `$1singleTask$2`);
+
             // Write the modified content back to AndroidManifest.xml
             fs.writeFileSync(manifestFile, manifestContent, 'utf-8');
             console.log("✅ AndroidManifest.xml updated with deep link URLs inside MainActivity! 🚀");
             resolve();
-        } else {
-            console.error("❌ Could not find MainActivity in AndroidManifest.xml");
-            reject("--- ❌ MainActivity not found in AndroidManifest.xml");
         }
     });
 };

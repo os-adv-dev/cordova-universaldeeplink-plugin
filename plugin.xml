@@ -44,11 +44,6 @@
 
 		<hook type="after_plugin_install" src="hooks/android/after_prepare_add_deeplinks.js" />
 
-		<!-- Add edit-config to set launchMode to singleTask -->
-		<edit-config file="app/src/main/AndroidManifest.xml" mode="merge" target="/manifest/application/activity[@android:name='MainActivity']">
-			<activity android:launchMode="singleTask" />
-		</edit-config>
-
 	</platform>
 	
 </plugin>
