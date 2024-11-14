@@ -18,7 +18,7 @@ class UniversalDeeplinkPlugin : CordovaPlugin() {
     private var callbackContext: CallbackContext? = null
 
     override fun onNewIntent(intent: Intent) {
-        handleIntent(intent)
+        handleIntent(intent.data)
     }
 
     override fun execute(
@@ -29,6 +29,10 @@ class UniversalDeeplinkPlugin : CordovaPlugin() {
 
         if (action == SET_UNIVERSAL_LINK_CALLBACK) {
             this.callbackContext = callbackContext
+
+            if(DeepLinkReceived.intentData != null) {
+                handleIntent(DeepLinkReceived.intentData)
+            }
             return true
         } else {
             this.callbackContext?.error("This Action $action is not handled in this plugin")
@@ -37,9 +41,9 @@ class UniversalDeeplinkPlugin : CordovaPlugin() {
         return false
     }
 
-    private fun handleIntent(intent: Intent?) {
+    private fun handleIntent(data: Uri?) {
         scope.launch(Dispatchers.IO) {
-            intent?.data?.let { data ->
+            data?.let { data ->
                 Log.d(TAG, "Received full URL: $data")
                 if (callbackContext != null) {
                     setUniversalLinkCallback(data)
@@ -65,11 +69,13 @@ class UniversalDeeplinkPlugin : CordovaPlugin() {
                 val pluginResult = PluginResult(PluginResult.Status.OK, jsonResult.toString())
                 pluginResult.keepCallback = true
                 callbackContext?.sendPluginResult(pluginResult)
+                DeepLinkReceived.intentData = null
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to parse link: ${e.message}")
                 val pluginResult = PluginResult(PluginResult.Status.ERROR, "Failed to parse link")
                 pluginResult.keepCallback = true
                 callbackContext?.sendPluginResult(pluginResult)
+                DeepLinkReceived.intentData = null
             }
         }
     }
@@ -77,5 +83,6 @@ class UniversalDeeplinkPlugin : CordovaPlugin() {
     override fun onDestroy() {
         super.onDestroy()
         scope.cancel()
+        DeepLinkReceived.intentData = null
     }
 }

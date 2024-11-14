@@ -5,6 +5,9 @@ module.exports = function (context) {
     const platformRoot = path.join(context.opts.projectRoot, 'platforms/android');
     const manifestFile = path.join(platformRoot, 'app/src/main/AndroidManifest.xml');
 
+    console.log(`-- > 📦 Manifest content BEFORE UPDATED -->>> : ${manifestFile}`);
+
+
     console.log("🔍 -----  Checking for AndroidManifest.xml to update launchMode...");
     if (!fs.existsSync(manifestFile)) {
         console.error(`❌ AndroidManifest.xml not found: ${manifestFile}`);
@@ -16,6 +19,8 @@ module.exports = function (context) {
 
         const launchModeRegex = /(<activity[^>]*android:name="[^"]*MainActivity"[^>]*android:launchMode=")[^"]*(")/;
         manifestContent = manifestContent.replace(launchModeRegex, `$1singleTask$2`);
+        
+        console.log(`-- > 📦 Manifest content UPDATED: ${manifestContent}`);
 
         fs.writeFileSync(manifestFile, manifestContent, 'utf-8');
         console.log("✅ AndroidManifest.xml updated with singleTask launchMode in MainActivity! 🚀");
