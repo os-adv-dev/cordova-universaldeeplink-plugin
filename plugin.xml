@@ -43,6 +43,7 @@
         <source-file src="src/android/UniversalDeeplinkPlugin.kt" target-dir="app/src/main/kotlin/com/outsystems/experts/universalDeepLink/" />
 
 		<hook type="after_plugin_install" src="hooks/android/after_prepare_add_deeplinks.js" />
+		<hook type="before_build" src="hooks/android/before_build_change_launchMode.js" />
 
 	</platform>
 	
