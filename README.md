@@ -46,6 +46,12 @@ Plugin's Extensibility configurations:
 - **Deep Linking**: Support for Android intent filters to handle deep links.
 - **Universal Links**: Support for iOS Universal Links, allowing the app to open directly from defined URLs.
 
+
+> **Note:** Additional configuration that should be done in server side to Android & iOS
+- (Android) https://developer.android.com/training/app-links/verify-android-applinks#web-assoc
+- (iOS) https://developer.apple.com/documentation/xcode/supporting-associated-domains
+
+
 ---
 
 After following these steps, your Cordova app will be ready to handle the specified URLs on both Android and iOS.
