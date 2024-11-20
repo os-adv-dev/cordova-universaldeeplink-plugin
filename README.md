@@ -11,7 +11,6 @@ cordova plugin add https://github.com/os-adv-dev/cordova-universaldeeplink-plugi
 ```
 
 ## Usage
-
 ### Step 1: Variables in the Plugin's Extensibility Configuration
 
 Plugin's Extensibility configurations:
@@ -45,7 +44,6 @@ Plugin's Extensibility configurations:
 - **Dynamic Configuration**: Configure URLs as variables for each environment, and the plugin will dynamically apply them to the Android and iOS configurations.
 - **Deep Linking**: Support for Android intent filters to handle deep links.
 - **Universal Links**: Support for iOS Universal Links, allowing the app to open directly from defined URLs.
-
 
 > **Note:** Additional configuration that should be done in server side to Android & iOS
 - (Android) https://developer.android.com/training/app-links/verify-android-applinks#web-assoc
