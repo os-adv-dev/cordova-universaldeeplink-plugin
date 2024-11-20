@@ -51,6 +51,9 @@ Plugin's Extensibility configurations:
 - (Android) https://developer.android.com/training/app-links/verify-android-applinks#web-assoc
 - (iOS) https://developer.apple.com/documentation/xcode/supporting-associated-domains
 
+On Android, when you click a link, your app opens "on top" of the previous app where the link was clicked. To change this behavior, follow the instructions in this link and set the launch mode to `singleTask`:
+https://www.outsystems.com/forums/discussion/87554/mobile-app-deeplink-doesnt-opening-the-app-externally/
+
 
 ---
 
