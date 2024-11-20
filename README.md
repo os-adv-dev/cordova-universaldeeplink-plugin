@@ -7,7 +7,7 @@ A Cordova plugin for enabling deep linking support on Android and Universal Link
 To add this plugin to your Cordova project, run:
 
 ```bash
-cordova plugin add https://github.com/os-adv-dev/cordova-universaldeeplink-plugin.git --variable com.app.dev="https://exampletest.com", --vairiable com.app.prod="https://exampletestproduction.com
+cordova plugin add https://github.com/os-adv-dev/cordova-universaldeeplink-plugin.git --variable com.app.dev="https://exampletest.com", --variable com.app.prod="https://exampletestproduction.com
 ```
 
 ## Usage
