@@ -14,6 +14,7 @@ class UniversalDeepLink: CDVPlugin {
     @objc(setUniversalLinkCallback:)
     func setUniversalLinkCallback(command: CDVInvokedUrlCommand) {
         callbackId = command.callbackId
+        NotificationCenter.default.removeObserver(self, name: Notification.Name("UniversalLinkReceived"), object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(handleUniversalLink(notification:)), name: Notification.Name("UniversalLinkReceived"), object: nil)
         
         if let initialURL = UniversalLinkStorage.shared.storedUniversalLinkURL {
