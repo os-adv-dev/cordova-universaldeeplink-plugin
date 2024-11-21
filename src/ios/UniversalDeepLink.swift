@@ -41,10 +41,12 @@ class UniversalDeepLink: CDVPlugin {
             // Send the JSON string as a result back to Cordova
             let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: jsonString)
             pluginResult?.setKeepCallbackAs(true)
+            UniversalLinkStorage.shared.storedUniversalLinkURL = nil
             self.commandDelegate.send(pluginResult, callbackId: self.callbackId)
         } else {
             // If JSON conversion fails, send an error message
             let errorResult = CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: "Failed to parse query parameters.")
+            UniversalLinkStorage.shared.storedUniversalLinkURL = nil
             self.commandDelegate.send(errorResult, callbackId: self.callbackId)
         }
     }
